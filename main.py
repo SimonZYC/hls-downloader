@@ -20,6 +20,7 @@ import m3u8
 
 import downloader
 
+from tqdm import tqdm
 
 class HlsDownloaderException(Exception):
     pass
@@ -29,6 +30,7 @@ DOWNLOADER = None  # Instance of downloader.Downloader
 
 DESCRIPTION = defaultdict(list)
 
+SEG_NAME_LIST = []
 
 def download_files_from_playlist(m3u8list):
     """
@@ -36,6 +38,7 @@ def download_files_from_playlist(m3u8list):
     :type m3u8list: m3u8.M3U8
     :rtype: None
     """
+
     for media in m3u8list.media:
         if media.absolute_uri:
             DESCRIPTION['MEDIA.' + media.type].append(media.absolute_uri)
@@ -56,14 +59,21 @@ def download_files_from_playlist(m3u8list):
     # noinspection PyUnresolvedReferences
     if not m3u8list.is_endlist:
         raise HlsDownloaderException("Playlist is not endlist. Only VOD Playlists are supported")
-
+    
+    
     segment_map_absolute_url = None
     if m3u8list.segment_map:
+        print("m3u8list.segment_map:")
+        print(m3u8list.segment_map)
         segment_map_absolute_url = urlparse.urljoin(m3u8list.base_uri, m3u8list.segment_map['uri'])
     if segment_map_absolute_url:
+        print("segment_map_absolute_url:")
+        print(segment_map_absolute_url)
         DOWNLOADER.download_one_file(segment_map_absolute_url)
-    for segment in m3u8list.segments:
+
+    for segment in tqdm(m3u8list.segments, total = len(m3u8list.segments)):
         DOWNLOADER.download_one_file(segment.absolute_uri)
+        SEG_NAME_LIST.append(DOWNLOADER.uri_to_filename(segment.absolute_uri))
 
 
 def process_playlist_by_uri(absolute_uri):
@@ -75,11 +85,22 @@ def process_playlist_by_uri(absolute_uri):
     """
     filename = DOWNLOADER.download_one_file(absolute_uri)
     base_uri = '/'.join(absolute_uri.split('/')[:-1]) + '/'
-
+    
     with codecs.open(filename, mode='rb', encoding='utf-8') as pl_f:
         pl_content = pl_f.read().strip()
-    media_playlist = m3u8.M3U8(content=pl_content, base_uri=base_uri)
+    select_content = []
+    
+    # # If there are failed segments, use following codes.
+    # temp = pl_content.split('\n')
+    # for i in [ 1040,1041]:
+    #     select_content.append(temp[2*i + 4])
+    #     select_content.append(temp[2*i + 5])
+    # select_content.append(temp[-1])
+    # select_content = '\n'.join(select_content)
+    # media_playlist = m3u8.M3U8(content=select_content, base_uri=base_uri)
 
+    media_playlist = m3u8.M3U8(content=pl_content, base_uri=base_uri)
+    
     download_files_from_playlist(media_playlist)
     return filename
 
@@ -96,6 +117,7 @@ def process_main_playlist(url_to_m3u8):
     main_list_filename = process_playlist_by_uri(url_to_m3u8)
 
     downloaded_files = DOWNLOADER.downloaded_files_by_url()
+
     for u in downloaded_files:
         downloaded_files[u] = os.path.relpath(downloaded_files[u], DOWNLOADER.download_dir)
     DESCRIPTION['Files'] = downloaded_files
@@ -139,6 +161,11 @@ def main(url_to_m3u8, download_dir, verbose, ignore_ssl):
 
     process_main_playlist(url_to_m3u8)
 
+    # seg_list = []
+    # for seg_name in SEG_NAME_LIST:
+    #     seg_list.append(VideoFileClip(seg_name))
+    # final_clip = concatenate_videoclips(seg_list)
+    # final_clip.to_videofile("./{}.mp4".format(download_dir))
 
 def parse_args():
     """
