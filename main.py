@@ -88,19 +88,29 @@ def process_playlist_by_uri(absolute_uri):
     
     with codecs.open(filename, mode='rb', encoding='utf-8') as pl_f:
         pl_content = pl_f.read().strip()
-    select_content = []
     
-    # # If there are failed segments, use following codes.
-    # temp = pl_content.split('\n')
-    # for i in [ 1040,1041]:
-    #     select_content.append(temp[2*i + 4])
-    #     select_content.append(temp[2*i + 5])
-    # select_content.append(temp[-1])
+    # # Complete playlist download
+    # media_playlist = m3u8.M3U8(content=pl_content, base_uri=base_uri)
+
+    
+    # If there are failed segments, use following codes.
+    temp = pl_content.split('\n')
+    select_content = []
+    for i in [1259, 1260]:
+        select_content.append(temp[2*i + 4])
+        select_content.append(temp[2*i + 5])
+    select_content.append(temp[-1])
+    select_content = '\n'.join(select_content)
+    media_playlist = m3u8.M3U8(content=select_content, base_uri=base_uri)
+
+
+    # # Download since specific segments.
+    # i = 2*1299 + 4
+    # for seg in temp[i:]:
+    #     select_content.append(seg)
     # select_content = '\n'.join(select_content)
     # media_playlist = m3u8.M3U8(content=select_content, base_uri=base_uri)
 
-    media_playlist = m3u8.M3U8(content=pl_content, base_uri=base_uri)
-    
     download_files_from_playlist(media_playlist)
     return filename
 
@@ -174,10 +184,8 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('url_to_m3u8', help="Url to main.m3u8")
     parser.add_argument('download_dir', help="Path to save files")
-    parser.add_argument('--ignore-ssl', default=False, action='store_true',
-                        help="Ignore SSL verification")
-    parser.add_argument('-v', '--verbose', action="store_true",
-                        help="Be more verbose")
+    parser.add_argument('--ignore-ssl', default=False, action='store_true', help="Ignore SSL verification")
+    parser.add_argument('-v', '--verbose', action="store_true", help="Be more verbose")
     kwargs = vars(parser.parse_args())
     return kwargs
 
