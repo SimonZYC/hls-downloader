@@ -89,19 +89,19 @@ def process_playlist_by_uri(absolute_uri):
     with codecs.open(filename, mode='rb', encoding='utf-8') as pl_f:
         pl_content = pl_f.read().strip()
     
-    # # Complete playlist download
-    # media_playlist = m3u8.M3U8(content=pl_content, base_uri=base_uri)
+    # Complete playlist download
+    media_playlist = m3u8.M3U8(content=pl_content, base_uri=base_uri)
 
     
-    # If there are failed segments, use following codes.
-    temp = pl_content.split('\n')
-    select_content = []
-    for i in [1259, 1260]:
-        select_content.append(temp[2*i + 4])
-        select_content.append(temp[2*i + 5])
-    select_content.append(temp[-1])
-    select_content = '\n'.join(select_content)
-    media_playlist = m3u8.M3U8(content=select_content, base_uri=base_uri)
+    # # If there are failed segments, use following codes.
+    # temp = pl_content.split('\n')
+    # select_content = []
+    # for i in [1117, 1118]:
+    #     select_content.append(temp[2*i + 4])
+    #     select_content.append(temp[2*i + 5])
+    # select_content.append(temp[-1])
+    # select_content = '\n'.join(select_content)
+    # media_playlist = m3u8.M3U8(content=select_content, base_uri=base_uri)
 
 
     # # Download since specific segments.

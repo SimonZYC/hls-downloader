@@ -9,7 +9,7 @@ out_bytes = subprocess.check_output(['find', object_dir, '-type', 'f', '-size', 
 
 out_lines = out_bytes.splitlines()
 
-items = [int(p.split('/')[-1].split('-')[1]) for p in out_lines]
+items = [int(p.split(str.encode('/'))[-1].split(str.encode('-'))[1]) for p in out_lines]
 
 final = []
 for i in items:
