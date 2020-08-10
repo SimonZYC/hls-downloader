@@ -96,7 +96,7 @@ def process_playlist_by_uri(absolute_uri):
     # # If there are failed segments, use following codes.
     # temp = pl_content.split('\n')
     # select_content = []
-    # for i in [1117, 1118]:
+    # for i in [127, 128, 146, 147, 1603, 1604]:
     #     select_content.append(temp[2*i + 4])
     #     select_content.append(temp[2*i + 5])
     # select_content.append(temp[-1])
@@ -105,7 +105,9 @@ def process_playlist_by_uri(absolute_uri):
 
 
     # # Download since specific segments.
-    # i = 2*1299 + 4
+    # i = 2*1240 + 4
+    # temp = pl_content.split('\n')
+    # select_content = []
     # for seg in temp[i:]:
     #     select_content.append(seg)
     # select_content = '\n'.join(select_content)
